@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: lightblue;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: black;
+            margin-bottom: 20px;
+        }
+
+        .form-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid gray;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 15px;
+            background: purple;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        .passwords-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        table {
+            width: 100%;
+            border: 1px solid gray;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid gray;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .password-hidden {
+            letter-spacing: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Password Manager</h1>
+
+        <div class="form-box">
+            <form id="passwordForm">
+                <div class="form-group">
+                    <label for="website">Website</label>
+                    <input type="text" id="website" required>
+                </div>
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit">Add Password</button>
+            </form>
+        </div>
+
+        <div class="passwords-section">
+            <h2>Saved Passwords</h2>
+            <div id="passwordsList"></div>
+        </div>
+    </div>
+
+    <script>
+        let passwords = [];
+        let showPassword = {};
+
+        function loadPasswords() {
+            let saved = localStorage.getItem("passwords");
+            if (saved) {
+                passwords = JSON.parse(saved);
+            }
+            displayPasswords();
+        }
+
+        function savePasswords() {
+            localStorage.setItem("passwords", JSON.stringify(passwords));
+        }
+
+        function displayPasswords() {
+            let list = document.getElementById("passwordsList");
+            if (passwords.length === 0) {
+                list.innerHTML = "<p>No passwords yet!</p>";
+                return;
+            }
+
+            let table = "<table><tr><th>Website</th><th>Username</th><th>Password</th><th>Action</th></tr>";
+
+            passwords.forEach((item, i) => {
+                let pass = showPassword[i] ? item.password : "••••••";
+                let btnText = showPassword[i] ? "Hide" : "Show";
+
+                table += `<tr>
+                            <td>${item.website}</td>
+                            <td>${item.username}</td>
+                            <td>${pass} <button onclick="toggle(${i})">${btnText}</button></td>
+                            <td><button onclick="removePassword(${i})">Delete</button></td>
+                          </tr>`;
+            });
+
+            table += "</table>";
+            list.innerHTML = table;
+        }
+
+        function toggle(i) {
+            showPassword[i] = !showPassword[i];
+            displayPasswords();
+        }
+
+        function removePassword(i) {
+            passwords.splice(i, 1);
+            savePasswords();
+            displayPasswords();
+        }
+
+        document.getElementById("passwordForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            let website = document.getElementById("website").value;
+            let username = document.getElementById("username").value;
+            let password = document.getElementById("password").value;
+
+            passwords.push({ website, username, password });
+            savePasswords();
+            displayPasswords();
+            this.reset();
+        });
+
+        window.onload = loadPasswords;
+    </script>
+</body>
+</html>
